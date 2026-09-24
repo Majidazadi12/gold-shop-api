@@ -96,22 +96,20 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // Configure CORS - Allow Angular app
+app.UseCors("AllowFrontend");
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp",
-        policy =>
+    options.AddPolicy("AllowFrontend",
+        builder =>
         {
-            policy.WithOrigins(
-                    "http://localhost:4200",
-                    "https://localhost:4200",
-                    "http://127.0.0.1:4200"
-                )
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+            builder.WithOrigins("http://goldshop2020.yzz.me/") // Replace with your actual domain
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
         });
 });
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+// ... later in the pipeline
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 var app = builder.Build();
 
