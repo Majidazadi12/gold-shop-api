@@ -1,0 +1,33 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+publish/
+*.user
+*.suo
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+
+# User secrets and local config (NEVER commit these)
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Environment files
+.env
+*.env
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node (if you have a frontend in the same repo)
+node_modules/
+dist/
