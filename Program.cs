@@ -53,6 +53,10 @@ builder.Services.AddSwaggerGen(c =>
 
 // Configure Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging()
+           .LogTo(Console.WriteLine, LogLevel.Information));
+/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         npgsqlOptions =>
@@ -62,7 +66,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 maxRetryDelay: TimeSpan.FromSeconds(5),
                 errorCodesToAdd: null);
             npgsqlOptions.CommandTimeout(60);
-        }));
+        }));*/
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-secret-key-change-this-in-production";
