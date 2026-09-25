@@ -96,7 +96,6 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // Configure CORS - Allow Angular app
-app.UseCors("AllowFrontend");
 
 builder.Services.AddCors(options =>
 {
@@ -113,6 +112,7 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 var app = builder.Build();
 
+app.UseCors("AllowFrontend");
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
