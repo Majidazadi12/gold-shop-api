@@ -106,7 +106,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         builder =>
         {
-            builder.WithOrigins("http://goldshop2020.yzz.me/") // Replace with your actual domain
+            builder.WithOrigins("https://goldshop2020.yzz.me/") // Replace with your actual domain
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
