@@ -115,43 +115,53 @@ builder.Services.AddCors(options =>
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 var app = builder.Build();
+// Configure CORS - Allow Angular app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+            "https://goldshop2020.yzz.me",
+            "http://goldshop2020.yzz.me",
+            "http://localhost:4200"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+var app = builder.Build();
+
+// CORS must be applied FIRST, before any other middleware
 app.UseCors("AllowFrontend");
-// Configure the HTTP request pipeline
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// NOTE: Commented out for development to avoid HTTPS certificate issues
-// app.UseHttpsRedirection();
-
-// CORS must come BEFORE Authentication
-app.UseCors("AllowAngularApp");
-
-// JWT Middleware (custom)
 app.UseJwtMiddleware();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Database check
+// Database check (unchanged)
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
         var canConnect = await dbContext.Database.CanConnectAsync();
-
         if (canConnect)
         {
             Console.WriteLine("✅ Database connection successful!");
             var shopCount = await dbContext.Shops.CountAsync();
             Console.WriteLine($"📊 Found {shopCount} shops in database");
-
-            // ⚠️ ADD THIS LINE to auto-seed on startup
             await SeedData.InitializeAsync(dbContext);
         }
         else
@@ -166,4 +176,13 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+
+// JWT Middleware (custom)
+app.UseJwtMiddleware();
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+// Database check
 app.Run();
