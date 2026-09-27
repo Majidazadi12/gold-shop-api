@@ -56,17 +56,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging()
            .LogTo(Console.WriteLine, LogLevel.Information));
-/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions =>
-        {
-            npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(5),
-                errorCodesToAdd: null);
-            npgsqlOptions.CommandTimeout(60);
-        }));*/
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-secret-key-change-this-in-production";
@@ -99,23 +88,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
-// Configure CORS - Allow Angular app
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        builder =>
-        {
-            builder.WithOrigins("https://goldshop2020.yzz.me/") // Replace with your actual domain
-                   .AllowAnyHeader()
-                   .AllowAnyMethod();
-        });
-});
-// ... later in the pipeline
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-var app = builder.Build();
-// Configure CORS - Allow Angular app
+// ✅ Configure CORS — single, correct definition
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -131,26 +104,33 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Port binding for Render
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
 
-// CORS must be applied FIRST, before any other middleware
+// ✅ CORS must be applied BEFORE any other middleware
 app.UseCors("AllowFrontend");
 
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// NOTE: HTTPS redirection disabled to avoid certificate issues behind Render's proxy
+// app.UseHttpsRedirection();
+
+// JWT Middleware (custom)
 app.UseJwtMiddleware();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Database check (unchanged)
+// Database check
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -175,14 +155,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-
-// JWT Middleware (custom)
-app.UseJwtMiddleware();
-
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-
-// Database check
 app.Run();
