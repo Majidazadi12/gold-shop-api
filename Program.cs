@@ -110,26 +110,23 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
 
-// ✅ CORS must be applied BEFORE any other middleware
-app.UseCors("AllowFrontend");
-
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// NOTE: HTTPS redirection disabled to avoid certificate issues behind Render's proxy
-// app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // keep disabled — correct for Render
 
-// JWT Middleware (custom)
+app.UseRouting();
+
+app.UseCors("AllowFrontend");   // ✅ between routing and auth
+
 app.UseJwtMiddleware();
-
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
+app.MapControllers();
 // Database check
 using (var scope = app.Services.CreateScope())
 {
