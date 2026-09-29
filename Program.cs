@@ -151,5 +151,6 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"❌ Database error: {ex.Message}");
     }
 }
-
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", time = DateTime.UtcNow }))
+   .AllowAnonymous();
 app.Run();
